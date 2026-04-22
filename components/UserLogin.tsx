@@ -96,7 +96,7 @@ export const UserLogin: React.FC<UserLoginProps> = ({ onLogin, appSettings }) =>
             <button 
                 type="submit" 
                 disabled={isLoading}
-                className="w-full nba-blue hover:bg-blue-800 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] uppercase tracking-wider flex items-center justify-center gap-2"
+                className="w-full bg-nba-blue hover:bg-blue-800 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] uppercase tracking-wider flex items-center justify-center gap-2"
             >
                 {isLoading ? (
                     <i className="fas fa-circle-notch animate-spin"></i>

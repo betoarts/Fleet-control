@@ -17,7 +17,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
       <div className="w-full max-w-md bg-gray-50 min-h-[100dvh] md:min-h-[90vh] md:max-h-[90vh] md:rounded-[3rem] shadow-2xl overflow-y-auto relative scrollbar-hide flex flex-col">
         
         {/* Header */}
-        <header className="nba-blue text-white shadow-lg sticky top-0 z-50 md:rounded-t-[3rem]">
+        <header className="bg-nba-blue text-white shadow-lg sticky top-0 z-50 md:rounded-t-[3rem]">
           <div className="px-6 py-5 flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <img src={appSettings?.logoUrl || "/logo.png"} alt="Logo" className="h-12 w-auto" />
@@ -59,7 +59,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
           </button>
           <button 
             onClick={() => setActiveTab('new-reservation')}
-            className="relative -top-6 nba-red w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl border-4 border-gray-50 active:scale-95 transition-transform"
+            className="relative -top-6 bg-nba-red w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl border-4 border-gray-50 active:scale-95 transition-transform"
           >
             <i className="fas fa-plus text-2xl"></i>
           </button>

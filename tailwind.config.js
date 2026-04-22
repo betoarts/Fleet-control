@@ -8,6 +8,10 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        'nba-blue': '#1D428A',
+        'nba-red': '#C8102E',
+      },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },

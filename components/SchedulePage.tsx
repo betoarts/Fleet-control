@@ -120,7 +120,7 @@ export const SchedulePage: React.FC<SchedulePageProps> = ({ user }) => {
             <div className="md:col-span-2">
                 <button 
                   disabled={isSubmitting}
-                  className="w-full py-4 nba-blue text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-800 transition-all shadow-lg active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                  className="w-full py-4 bg-nba-blue text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-800 transition-all shadow-lg active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
                 >
                     {isSubmitting ? <i className="fas fa-spinner animate-spin"></i> : <i className="fas fa-plus"></i>}
                     Confirmar Reserva
