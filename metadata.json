@@ -1,0 +1,7 @@
+{
+  "name": "Fleet Control",
+  "description": "Uma aplicação moderna para controle de reservas e registros de quilometragem da frota Fleet Control, com integração inteligente para análise de itinerários.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

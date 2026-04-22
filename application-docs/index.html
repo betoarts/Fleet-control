@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Control - Documentação</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400&family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo-area">
+                <img src="images/logo.png" alt="Fleet Control Logo" class="logo-img">
+                <div class="logo-text">Fleet<br>Control</div>
+            </div>
+            <ul class="nav-links">
+                <li class="nav-item"><a href="#intro" class="nav-link active"><i class="fa-solid fa-house"></i>
+                        <span>Introdução</span></a></li>
+                <li class="nav-item"><a href="#platforms" class="nav-link"><i class="fa-solid fa-mobile-screen"></i>
+                        <span>Plataformas</span></a></li>
+                <li class="nav-item"><a href="#modules" class="nav-link"><i class="fa-solid fa-cubes"></i>
+                        <span>Módulos</span></a></li>
+                <li class="nav-item"><a href="#tech" class="nav-link"><i class="fa-solid fa-code"></i>
+                        <span>Tecnologias</span></a></li>
+                <li class="nav-item"><a href="#structure" class="nav-link"><i class="fa-solid fa-folder-tree"></i>
+                        <span>Estrutura</span></a></li>
+                <li class="nav-item"><a href="#setup" class="nav-link"><i class="fa-solid fa-gear"></i>
+                        <span>Instalação</span></a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Intro Section -->
+            <section id="intro">
+                <h1>Fleet Control 🚗📊</h1>
+                <div class="neu-card">
+                    <p><strong>Fleet Control</strong> é uma solução abrangente de gerenciamento de frota desenvolvida
+                        para a <strong>Controle de Frota</strong>. Combina uma aplicação web moderna em React com
+                        capacidades Nativas Mobile via Capacitor, permitindo o gerenciamento eficiente de viagens,
+                        disponibilidade de veículos e desempenho dos motoristas.</p>
+                    <br>
+                    <p><i class="fa-solid fa-star" style="color: var(--accent-color)"></i> <strong>Destaques:</strong>
+                        Análise com IA, Rastreamento em Tempo Real, Dashboard Administrativo e Segurança Biométrica.</p>
+                </div>
+            </section>
+
+            <!-- Platforms Section -->
+            <section id="platforms">
+                <h1>Mobile & Web (PWA)</h1>
+                <div class="neu-card">
+                    <p>Esta aplicação foi construída como um <strong>Progressive Web App (PWA)</strong> e empacotada com
+                        <strong>Capacitor</strong> para uma experiência nativa em Android/iOS.
+                    </p>
+
+                    <h2>Funcionalidades Nativas Mobile</h2>
+                    <ul>
+                        <li><span class="tag blue">Segurança</span> <strong>Desbloqueio Biométrico</strong>: Acesso
+                            seguro usando Impressão Digital/FaceID.</li>
+                        <li><span class="tag green">GPS</span> <strong>Geolocalização em Segundo Plano</strong>:
+                            Rastreia coordenadas da rota com precisão.</li>
+                        <li><span class="tag purple">UX</span> <strong>Feedback Háptico</strong>: Resposta tátil para
+                            ações.</li>
+                        <li><span class="tag blue">Estado</span> <strong>Auto-Lock</strong>: Bloqueio automático ao
+                            minimizar.</li>
+                    </ul>
+
+                    <h2>Funcionalidades Web</h2>
+                    <ul>
+                        <li><strong>Design Responsivo</strong> (Desktop, Tablet, Mobile)</li>
+                        <li><strong>Capacidade Offline</strong> (Service Workers)</li>
+                        <li><strong>Instalável</strong> via Navegador</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Modules Section -->
+            <section id="modules">
+                <h1>Módulos Funcionais</h1>
+
+                <div class="neu-card">
+                    <h3>1. App do Usuário (Motorista)</h3>
+                    <ul>
+                        <li><strong>Registro de Viagem:</strong> Fluxo "Iniciar/Parar" com validação de KM.</li>
+                        <li><strong>Itinerário Inteligente:</strong> A IA analisa e categoriza viagens.</li>
+                        <li><strong>Histórico:</strong> Registro pessoal com status.</li>
+                        <li><strong>Tarefas:</strong> Lista Kanban com prioridades.</li>
+                        <li><strong>Seleção de Veículo:</strong> Visualização em tempo real.</li>
+                    </ul>
+                </div>
+
+                <div class="neu-card">
+                    <h3>2. Dashboard Administrativo</h3>
+                    <p><em>Desktop Only - Acesso via Segredo Administrador</em></p>
+                    <ul>
+                        <li><strong>KPIs:</strong> Total de KM, Viagens, Usuários Ativos.</li>
+                        <li><strong>Mapa em Tempo Real:</strong> Rastreamento da frota.</li>
+                        <li><strong>Feed de Atividade:</strong> Eventos em tempo real.</li>
+                        <li><strong>Ranking:</strong> Gamificação de motoristas.</li>
+                        <li><strong>Gerenciamento:</strong> Veículos e Tarefas.</li>
+                        <li><strong>Relatórios:</strong> Exportação CSV.</li>
+                    </ul>
+                </div>
+
+                <div class="neu-card">
+                    <h3>3. Inteligência Artificial (Gemini)</h3>
+                    <ul>
+                        <li>Resumos Semanais em linguagem natural.</li>
+                        <li>Etiquetagem automática de Itinerários.</li>
+                        <li>Detecção de Anomalias (Planejado).</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Tech Stack Section -->
+            <section id="tech">
+                <h1>Tecnologias Utilizadas</h1>
+                <div class="neu-card">
+                    <table>
+                        <tr>
+                            <th>Área</th>
+                            <th>Tecnologia</th>
+                        </tr>
+                        <tr>
+                            <td>Frontend</td>
+                            <td>React 19, TypeScript, Vite</td>
+                        </tr>
+                        <tr>
+                            <td>Estilização</td>
+                            <td>Tailwind CSS v4 (Custom System)</td>
+                        </tr>
+                        <tr>
+                            <td>Backend</td>
+                            <td>Supabase (Postgres, Auth, Realtime)</td>
+                        </tr>
+                        <tr>
+                            <td>Mobile</td>
+                            <td>Capacitor v8</td>
+                        </tr>
+                        <tr>
+                            <td>AI</td>
+                            <td>Google Gemini Flash 2.5 Flash</td>
+                        </tr>
+                        <tr>
+                            <td>Mapas</td>
+                            <td>Leaflet</td>
+                        </tr>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Structure Section -->
+            <section id="structure">
+                <h1>Estrutura do Projeto</h1>
+                <div class="neu-card">
+                    <pre><code>FleetControl/
+├── android/             <span style="color: #6a737d"># Projeto Nativo Android</span>
+├── src/
+│   ├── components/      <span style="color: #6a737d"># UI (Dashboard, Mapas, Forms)</span>
+│   ├── services/        <span style="color: #6a737d"># Lógica (Gemini, Rastreamento)</span>
+│   ├── lib/             <span style="color: #6a737d"># Config Supabase & Libs</span>
+│   └── App.tsx          <span style="color: #6a737d"># Rotas & Setup</span>
+├── supabase/            <span style="color: #6a737d"># SQL & Schema</span>
+└── capacitor.config.ts  <span style="color: #6a737d"># Config Mobile</span></code></pre>
+                </div>
+            </section>
+
+            <!-- Setup Section -->
+            <section id="setup">
+                <h1>Instalação e Configuração</h1>
+
+                <div class="neu-card">
+                    <h3>Variáveis de Ambiente (.env.local)</h3>
+                    <pre><code>VITE_SUPABASE_URL=seu_url
+VITE_SUPABASE_ANON_KEY=sua_key
+VITE_GEMINI_API_KEY=sua_gemini_key</code></pre>
+                </div>
+
+                <div class="neu-card">
+                    <h3>Comandos Úteis</h3>
+                    <p>Instalar dependências:</p>
+                    <pre><code>npm install</code></pre>
+
+                    <p>Rodar Web (Dev):</p>
+                    <pre><code>npm run dev</code></pre>
+
+                    <p>Rodar Mobile (Android):</p>
+                    <pre><code>npm run build
+npx cap sync
+npx cap run android</code></pre>
+                </div>
+            </section>
+
+            <footer style="margin-top: 4rem; text-align: center; color: var(--text-muted); padding-bottom: 2rem;">
+                <p>&copy; 2026 Fleet Control. Todos os direitos reservados.</p>
+            </footer>
+
+        </main>
+    </div>
+    <a href="https://wa.me/5554991680204?text=mais%20informa%C3%A7%C3%B5es" class="whatsapp-float" target="_blank"
+        rel="noopener noreferrer">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+    <script src="script.js"></script>
+</body>
+
+</html>

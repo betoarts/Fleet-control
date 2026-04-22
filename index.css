@@ -1,0 +1,76 @@
+/* Leaflet CSS - must be first */
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Toast animations */
+@keyframes slideIn {
+  from { 
+    transform: translateX(100%); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateX(0); 
+    opacity: 1; 
+  }
+}
+
+.animate-slideIn { 
+  animation: slideIn 0.3s ease-out; 
+}
+
+/* Dashboard fade animation */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.animate-fadeIn { 
+  animation: fadeIn 0.3s ease-out; 
+}
+
+/* Leaflet custom marker styles */
+.leaflet-marker-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.vehicle-marker-popup .leaflet-popup-content-wrapper {
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: white;
+}
+
+.vehicle-marker-popup .leaflet-popup-tip {
+  background: rgba(17, 24, 39, 0.95);
+}
+
+.vehicle-marker-popup .leaflet-popup-close-button {
+  color: white;
+}
+
+/* Leaflet container fix */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}

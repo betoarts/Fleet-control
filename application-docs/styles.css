@@ -1,0 +1,350 @@
+:root {
+  /* Neumorphism Dark Theme Variables */
+  --bg-color: #2e323b;
+  --text-main: #e0e5ec;
+  --text-muted: #a0a5b1;
+  --accent-color: #00bcd4;
+  /* Cyan */
+  --accent-glow: rgba(0, 188, 212, 0.4);
+
+  --shadow-light: #3e4450;
+  --shadow-dark: #1e2026;
+
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Layout */
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 280px;
+  padding: 2rem;
+  background-color: var(--bg-color);
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  /* Subtle separator */
+
+  /* Neumorphic Sidebar? Maybe just clean for readability, 
+     but let's add a subtle convex feel to the nav items */
+}
+
+.logo-area {
+  margin-bottom: 10rem;
+  text-align: center;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 4px var(--shadow-dark), -2px -2px 4px var(--shadow-light);
+}
+
+.logo-img {
+  max-width: 120px;
+  height: auto;
+  margin-bottom: 1rem;
+  filter: drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.3));
+}
+
+.nav-links {
+  list-style: none;
+}
+
+.nav-item {
+  margin-bottom: 1rem;
+}
+
+.nav-link {
+  display: block;
+  padding: 12px 20px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  transition: all 0.3s ease;
+
+  /* Flat by default */
+}
+
+.nav-link:hover {
+  color: var(--text-main);
+
+  /* Neumorphic Hover (Concave/Pressed look or just popped?) 
+     Let's go with a popped "button" look on hover with soft shadows */
+  box-shadow:
+    5px 5px 10px var(--shadow-dark),
+    -5px -5px 10px var(--shadow-light);
+}
+
+.nav-link.active {
+  color: var(--accent-color);
+  /* Pressed state for active */
+  box-shadow: inset 3px 3px 7px var(--shadow-dark),
+    inset -3px -3px 7px var(--shadow-light);
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  margin-left: 280px;
+  /* Match sidebar width */
+  padding: 3rem 4rem;
+  max-width: 1200px;
+}
+
+section {
+  margin-bottom: 4rem;
+  scroll-margin-top: 2rem;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--text-main);
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  text-shadow: 3px 3px 6px var(--shadow-dark), -2px -2px 5px var(--shadow-light);
+}
+
+h2 {
+  font-size: 1.8rem;
+  margin-top: 2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--shadow-light);
+  display: inline-block;
+  margin-bottom: 1.5rem;
+}
+
+h3 {
+  font-size: 1.4rem;
+  margin-top: 1.5rem;
+  color: var(--accent-color);
+}
+
+p,
+li {
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+ul {
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+/* Neumorphic Cards */
+.neu-card {
+  background: var(--bg-color);
+  padding: 2rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 2rem;
+
+  /* The Classic Neumorphic Shadow */
+  box-shadow:
+    9px 9px 16px var(--shadow-dark),
+    -9px -9px 16px var(--shadow-light);
+}
+
+/* Code Blocks */
+pre {
+  background: var(--bg-color);
+  padding: 1.5rem;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #a5b3ce;
+
+  /* Inset shadow for code blocks to look "sunken" */
+  box-shadow: inset 5px 5px 10px var(--shadow-dark),
+    inset -5px -5px 10px var(--shadow-light);
+  border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+code {
+  font-family: 'Fira Code', 'Courier New', monospace;
+  color: var(--accent-color);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+pre code {
+  color: inherit;
+  background: transparent;
+  padding: 0;
+}
+
+/* Buttons (if any) */
+.btn-neu {
+  display: inline-block;
+  padding: 12px 24px;
+  background: var(--bg-color);
+  color: var(--accent-color);
+  text-decoration: none;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+
+  box-shadow:
+    6px 6px 10px var(--shadow-dark),
+    -6px -6px 10px var(--shadow-light);
+}
+
+.btn-neu:active {
+  box-shadow: inset 4px 4px 8px var(--shadow-dark),
+    inset -4px -4px 8px var(--shadow-light);
+  transform: translateY(1px);
+}
+
+.btn-neu:hover {
+  filter: brightness(110%);
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+th,
+td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--shadow-light);
+}
+
+th {
+  color: var(--accent-color);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+/* Badges/Tags */
+.tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: 8px;
+
+  /* Small Nuemorhpic bump */
+  box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+}
+
+.tag.blue {
+  color: #4fc3f7;
+}
+
+.tag.green {
+  color: #81c784;
+}
+
+.tag.purple {
+  color: #ba68c8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 60px;
+    padding: 1rem 0.5rem;
+    overflow: hidden;
+  }
+
+  .logo-text,
+  .nav-link span {
+    display: none;
+  }
+
+  .nav-link {
+    text-align: center;
+    padding: 12px;
+  }
+
+  .main-content {
+    margin-left: 60px;
+    padding: 2rem;
+  }
+}
+
+/* WhatsApp Floating Button */
+.whatsapp-float {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 64px;
+  height: 64px;
+  background-color: #25D366;
+  color: #FFF;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  z-index: 100;
+  transition: all 0.3s ease;
+
+  /* Neumorphic Shadow adapted for the green button on dark bg */
+
+  box-shadow:
+    6px 6px 10px var(--shadow-dark),
+    -6px -6px 10px var(--shadow-light);
+}
+
+.whatsapp-float:hover {
+  transform: translateY(-5px);
+  filter: brightness(110%);
+  box-shadow:
+    8px 8px 15px var(--shadow-dark),
+    -8px -8px 15px var(--shadow-light);
+}
+
+.whatsapp-float:active {
+  transform: translateY(2px);
+  box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.3);
+}
