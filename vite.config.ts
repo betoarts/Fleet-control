@@ -8,6 +8,7 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0',
   },
+  envPrefix: ['VITE_', 'SUPABASE_'],
   plugins: [
     react(),
     VitePWA({
