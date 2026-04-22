@@ -102,6 +102,8 @@ CREATE POLICY "Allow anon update tasks" ON public.tasks FOR UPDATE USING (true);
 -- Tabela: app_settings
 DROP POLICY IF EXISTS "Allow anon select settings" ON public.app_settings;
 CREATE POLICY "Allow anon select settings" ON public.app_settings FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow anon all settings" ON public.app_settings;
+CREATE POLICY "Allow anon all settings" ON public.app_settings FOR ALL USING (true) WITH CHECK (true);
 
 -- Tabelas de Tracking (veiculos_posicoes e notificacoes_parada)
 DROP POLICY IF EXISTS "Allow anon select positions" ON public.veiculos_posicoes;
