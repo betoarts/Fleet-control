@@ -67,3 +67,10 @@ GRANT USAGE ON SCHEMA public TO anon;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon;
 GRANT ALL ON ALL ROUTINES IN SCHEMA public TO anon;
+
+-- 5. Habilitar Realtime para as tabelas principais
+-- Isso permite que o mapa se atualize automaticamente
+ALTER PUBLICATION supabase_realtime ADD TABLE public.veiculos_posicoes;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.notificacoes_parada;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.reservations;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.app_settings;

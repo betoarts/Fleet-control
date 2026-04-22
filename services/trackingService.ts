@@ -71,13 +71,13 @@ async function sendPositionToServer(position: GeolocationPosition): Promise<void
       timestamp: new Date(position.timestamp).toISOString()
     };
 
-    // Use standard invoke (API configured locally)
-    const { data, error } = await supabase.functions.invoke('receive-position', {
-      body: payload
-    });
+    // Direct insert into the table (Edge Function was not found in the project)
+    const { error } = await supabase
+      .from('veiculos_posicoes')
+      .insert([payload]);
 
     if (error) {
-      console.error('Error sending position:', error);
+      console.error('Error sending position to database:', error);
     }
   } catch (error) {
     console.error('Failed to send position:', error);
@@ -115,10 +115,18 @@ export async function startTracking(
     // Watch position
     state.watchId = navigator.geolocation.watchPosition(
       (pos) => {
+        console.debug('GPS Position update received:', pos.coords.latitude, pos.coords.longitude);
         state.lastPosition = pos;
       },
-      (err) => console.error('GPS Watch error:', err),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+      (err) => {
+        console.error('GPS Watch error:', err);
+        // Map common errors to user-friendly messages if needed
+      },
+      { 
+        enableHighAccuracy: true, 
+        timeout: 15000, 
+        maximumAge: 5000 
+      }
     );
 
     // Send positions periodically
