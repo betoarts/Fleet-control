@@ -146,15 +146,15 @@ O Docker é apenas para desenvolvimento local. Para a nuvem:
 
 ### 2. Configurar o Frontend (Vercel)
 
-Ao conectar o repositório na Vercel, você deve configurar as **Environment Variables**.
+Ao conectar o repositório na Vercel, você pode usar a **integração automática do Supabase** ou configurar as **Environment Variables** manualmente.
 
-> **IMPORTANTE**: O Vite exige que todas as variáveis comecem com o prefixo `VITE_`.
+> **DICA**: O projeto está configurado para aceitar tanto o prefixo `VITE_` quanto o prefixo `SUPABASE_` (padrão da Vercel).
 
-| Nome da Variável          | Origem no Supabase (Settings -> API) |
-| :------------------------ | :----------------------------------- |
-| **`VITE_API_URL`**        | `Project URL`                        |
-| **`VITE_API_KEY`**        | `anon` / `public` Key                |
-| **`VITE_GEMINI_API_KEY`** | Sua chave do Google Gemini Flash     |
+| Nome da Variável          | Alternativa (Vercel Integration) | Origem no Supabase (Settings -> API) |
+| :------------------------ | :------------------------------- | :----------------------------------- |
+| **`VITE_API_URL`**        | `SUPABASE_URL`                   | `Project URL`                        |
+| **`VITE_API_KEY`**        | `SUPABASE_ANON_KEY`              | `anon` / `public` Key                |
+| **`VITE_GEMINI_API_KEY`** | -                                | Sua chave do Google Gemini Flash     |
 
 ### 3. Sincronização
 
