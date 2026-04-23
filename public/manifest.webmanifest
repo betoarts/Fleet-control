@@ -1,7 +1,7 @@
 {
-  "name": "Fleet Control - Controle de Frota",
-  "short_name": "Fleet Control",
-  "description": "Sistema de controle de frota - Fleet Control",
+  "name": "NBAPARK - Controle de Frota",
+  "short_name": "NBAPARK",
+  "description": "Sistema de controle de frota - NBAPARK",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
