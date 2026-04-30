@@ -6,27 +6,22 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || env.SUPABASE_URL;
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY;
+
   // LOG PARA DEBUG NO BUILD DA VERCEL (Aparecerá nos logs de deploy)
   console.log('--- VITE BUILD ENV CHECK ---');
   console.log('Mode:', mode);
-  console.log('SUPABASE_URL found:', !!(process.env.SUPABASE_URL || env.SUPABASE_URL));
-  console.log('SUPABASE_ANON_KEY found:', !!(process.env.SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY));
-  console.log('VITE_API_URL found:', !!(process.env.VITE_API_URL || env.VITE_API_URL));
+  console.log('SUPABASE_URL found:', !!supabaseUrl);
+  console.log('SUPABASE_ANON_KEY found:', !!supabaseKey);
   console.log('----------------------------');
-
-  const supabaseUrl = process.env.SUPABASE_URL || env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_API_URL || env.VITE_API_URL;
-  const supabaseKey = process.env.SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_API_KEY || env.VITE_API_KEY;
 
   return {
     server: {
       port: 3000,
       host: '0.0.0.0',
     },
-    envPrefix: ['VITE_', 'SUPABASE_', 'NEXT_PUBLIC_'],
-    define: {
-      '__SUPABASE_URL__': JSON.stringify(supabaseUrl),
-      '__SUPABASE_ANON_KEY__': JSON.stringify(supabaseKey),
-    },
+    envPrefix: ['VITE_'],
     plugins: [
       react(),
       VitePWA({

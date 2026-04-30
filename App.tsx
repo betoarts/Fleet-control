@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Layout } from './components/Layout';
-import { Reservation, AppState, AppSettings } from './types';
+import { Reservation, AppState, AppSettings, Vehicle } from './types';
 import { analyzeItinerary, generateWeeklySummary } from './services/tipsService';
 import { sendWebhook } from './services/webhookService';
 import { UserLogin } from './components/UserLogin';
@@ -64,11 +64,12 @@ const App: React.FC = () => {
   // Estado para verificar se o veículo está bloqueado
   const [vehicleBlocked, setVehicleBlocked] = useState<string | null>(null);
   const [pendingTasksCount, setPendingTasksCount] = useState(0);
+  const [occupiedVehicleInfo, setOccupiedVehicleInfo] = useState<{user: string, vehicle: string, otherAvailable?: string} | null>(null);
 
   const [geoPermission, setGeoPermission] = useState<string>('prompt');
   const [showLocationHelp, setShowLocationHelp] = useState(false);
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
-  const [availableVehicles, setAvailableVehicles] = useState<{id: string, name: string, icon: string}[]>([]);
+  const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>([]);
   
   const fetchAppSettings = useCallback(() => {
     adminService.getAppSettings()
@@ -78,13 +79,12 @@ const App: React.FC = () => {
     // Fetch vehicles
     adminService.getVehicleStatus()
       .then(vehicles => {
-        // Only show non-blocked vehicles
-        const list = vehicles
-          .filter(v => !v.isBlocked)
-          .map(v => ({
+        const list: Vehicle[] = vehicles.map(v => ({
             id: v.id,
             name: v.vehicleName,
-            icon: v.type === 'Utilitario' ? 'fa-truck-pickup' : 'fa-car-side'
+            icon: v.type === 'Utilitario' ? 'fa-truck-pickup' : 'fa-car-side',
+            status: v.status as 'Livre' | 'Ocupado' | 'Bloqueado',
+            isBlocked: v.isBlocked
           }));
         setAvailableVehicles(list);
       })
@@ -119,10 +119,28 @@ const App: React.FC = () => {
   
   // Gestão de Sessão do Usuário
   useEffect(() => {
-    const savedUser = localStorage.getItem('nbapark_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    const checkSession = async () => {
+      const savedUser = localStorage.getItem('nbapark_user');
+      if (savedUser) {
+        try {
+          const parsedUser = JSON.parse(savedUser);
+          // Validar se o usuário ainda existe no banco (pode ter sido deletado ou DB resetado)
+          const exists = await userService.validateUserExists(parsedUser.id);
+          if (exists) {
+            setUser(parsedUser);
+          } else {
+            console.warn('Sessão inválida: Usuário não existe no banco de dados.');
+            localStorage.removeItem('nbapark_user');
+            setUser(null);
+          }
+        } catch (e) {
+          localStorage.removeItem('nbapark_user');
+          setUser(null);
+        }
+      }
+    };
+    
+    checkSession();
   }, []);
 
   // Atalho de teclado secreto para Admin Dashboard (Ctrl+Shift+A)
@@ -175,44 +193,62 @@ const App: React.FC = () => {
             type: 'warning',
             message: 'Permissão de localização negada. O rastreamento não funcionará.'
           });
+          // Log permission denial for admin
+          userService.logPermissionDenial(user.id, user.name);
         }
       });
     }
   }, [user]);
 
-  // Sync manual ao mudar
+  // Sincronização de dados globais (apenas no dashboard)
   useEffect(() => {
-    if (activeTab === 'dashboard') {
-       // Atualiza status global do veículo
-       userService.getActiveReservations().then(setGlobalActiveTrips).catch(console.error);
-       
-       // Verificar se o veículo principal está bloqueado
-       const checkVehicleBlock = async () => {
-         try {
-           // Check all available vehicles or specific one if needed
-           // For dashboard summary, we might want to know if *any* is blocked, 
-           // but for user blocking feedback, it's usually on selection.
-           // Let's just ensuring we don't error on hardcoded check.
-           if (availableVehicles.length > 0) {
-              const vehicleStatus = await adminService.isVehicleBlocked(availableVehicles[0].name);
-              setVehicleBlocked(vehicleStatus.blocked ? vehicleStatus.reason : null);
-           }
-         } catch (e) {
-           console.debug('Could not check vehicle block status');
-         }
-       };
-       checkVehicleBlock();
-       
-       if (user) {
-         userService.getPendingTasksCount(user.id).then(setPendingTasksCount).catch(console.error);
-       }
-    }
-    
-    if (user) {
-       userService.getUserReservations(user.id).then(setReservations).catch(console.error);
-       userService.getPendingTasksCount(user.id).then(setPendingTasksCount).catch(console.error);
-    }
-  }, [activeTab, availableVehicles]);
+    if (!user || activeTab !== 'dashboard') return;
+
+    let isMounted = true;
+    const fetchData = async () => {
+      try {
+        // Atualiza status global do veículo
+        const activeTrips = await userService.getActiveReservations();
+        if (isMounted) setGlobalActiveTrips(activeTrips);
+        
+        // Verificar se o veículo principal está bloqueado
+        if (availableVehicles.length > 0) {
+          const vehicleStatus = await adminService.isVehicleBlocked(availableVehicles[0].name);
+          if (isMounted) setVehicleBlocked(vehicleStatus.blocked ? vehicleStatus.reason : null);
+        }
+      } catch (err) {
+        if (isMounted) console.error("Erro ao sincronizar dados globais:", err);
+      }
+    };
+
+    fetchData();
+    return () => { isMounted = false; };
+  }, [user?.id, activeTab, availableVehicles]);
+
+  // Sincronização de dados do usuário
+  useEffect(() => {
+    if (!user) return;
+
+    let isMounted = true;
+    const fetchUserData = async () => {
+      try {
+        const [reservations, tasksCount] = await Promise.all([
+          userService.getUserReservations(user.id),
+          userService.getPendingTasksCount(user.id)
+        ]);
+
+        if (isMounted) {
+          setReservations(reservations);
+          setPendingTasksCount(tasksCount);
+        }
+      } catch (err) {
+        if (isMounted) console.error("Erro ao sincronizar dados do usuário:", err);
+      }
+    };
+
+    fetchUserData();
+    return () => { isMounted = false; };
+  }, [user?.id, activeTab]);
 
   // Notificações removidas
 
@@ -286,6 +322,23 @@ const App: React.FC = () => {
         setIsSubmitting(false);
         return;
       }
+
+      // Check if vehicle is already occupied by another active trip
+      const activeTripForVehicle = globalActiveTrips.find(t => t.vehicle === vehicle);
+      if (activeTripForVehicle) {
+        const otherAvailable = availableVehicles.find(v => 
+          !v.isBlocked && 
+          !globalActiveTrips.some(t => t.vehicle === v.name)
+        );
+
+        setOccupiedVehicleInfo({
+          user: activeTripForVehicle.employeeName,
+          vehicle: vehicle,
+          otherAvailable: otherAvailable ? otherAvailable.name : undefined
+        });
+        setIsSubmitting(false);
+        return;
+      }
     } catch (error) {
       console.error('Error checking vehicle status:', error);
       // Continue anyway if check fails
@@ -303,6 +356,15 @@ const App: React.FC = () => {
 
     try {
       if (user) {
+        // Verificar se usuário ainda existe antes de criar reserva
+        const userStillExists = await userService.validateUserExists(user.id);
+        if (!userStillExists) {
+          alert("Sua sessão expirou ou é inválida. Por favor, faça login novamente.");
+          setUser(null);
+          localStorage.removeItem('nbapark_user');
+          setIsSubmitting(false);
+          return;
+        }
         await userService.createReservation(newRes, user.id);
       }
       
@@ -598,6 +660,10 @@ const App: React.FC = () => {
                         
                         if (status === 'denied') {
                           setShowLocationHelp(true);
+                          // Log permission denial for admin
+                          if (user) {
+                            userService.logPermissionDenial(user.id, user.name);
+                          }
                         }
                       }}
                       className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-black px-6 py-3 rounded-xl text-sm shadow-sm transition-colors uppercase tracking-wide flex items-center gap-2"
@@ -759,23 +825,26 @@ const App: React.FC = () => {
                   <div className="flex justify-between items-start relative z-10">
                      <div>
                         <h2 className="text-2xl font-black text-nba-red uppercase italic tracking-tighter mb-1">OCUPADO</h2>
-                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Veículo em uso no momento</p>
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Veículo(s) em uso no momento</p>
                         
-                        <div className="flex items-center gap-3 bg-white/50 p-2 rounded-xl backdrop-blur-sm">
-                           <div className="w-10 h-10 bg-nba-red text-white rounded-full flex items-center justify-center font-black text-lg">
-                              {globalActiveTrips[0].employeeName.charAt(0)}
-                           </div>
-                           <div>
-                              <p className="text-[10px] font-black text-gray-400 uppercase">Motorista Atual</p>
-                              <p className="text-sm font-black text-gray-800 uppercase leading-none">{globalActiveTrips[0].employeeName}</p>
-                           </div>
+                        <div className="flex flex-col gap-3">
+                          {globalActiveTrips.map(trip => (
+                            <div key={trip.id} className="flex items-center gap-3 bg-white/50 p-2 rounded-xl backdrop-blur-sm border border-red-100">
+                               <div className="w-10 h-10 bg-nba-red text-white rounded-full flex items-center justify-center font-black text-lg">
+                                  {trip.employeeName.charAt(0)}
+                               </div>
+                               <div>
+                                  <p className="text-[10px] font-black text-gray-400 uppercase leading-none mb-1">
+                                    {trip.vehicle || 'Veículo'} em uso por
+                                  </p>
+                                  <p className="text-sm font-black text-gray-800 uppercase leading-none">{trip.employeeName}</p>
+                                  <p className="text-[9px] font-bold text-nba-red mt-1">
+                                    Saída: {new Date(trip.startTime).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}
+                                  </p>
+                               </div>
+                            </div>
+                          ))}
                         </div>
-                     </div>
-                     <div className="bg-white p-3 rounded-2xl shadow-sm text-center min-w-[80px]">
-                        <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Saída</p>
-                        <p className="text-lg font-black text-nba-red">
-                           {new Date(globalActiveTrips[0].startTime).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}
-                        </p>
                      </div>
                   </div>
                </div>
@@ -935,7 +1004,9 @@ const App: React.FC = () => {
                     className="w-full pl-12 pr-6 py-5 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-nba-blue outline-none transition-all font-bold text-gray-800 text-lg shadow-inner appearance-none"
                   >
                     {availableVehicles.map(v => (
-                      <option key={v.id} value={v.name}>{v.name}</option>
+                      <option key={v.id} value={v.name} disabled={v.isBlocked}>
+                        {v.name} {v.status === 'Ocupado' ? '(Ocupado)' : v.isBlocked ? '(Bloqueado)' : ''}
+                      </option>
                     ))}
                   </select>
                   <div className="absolute inset-y-0 right-0 pr-5 flex items-center pointer-events-none">
@@ -1313,6 +1384,52 @@ const App: React.FC = () => {
 
       {activeTab === 'todo' && (
         <TodoList />
+      )}
+
+      {/* Modal de Veículo Ocupado */}
+      {occupiedVehicleInfo && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn p-4">
+          <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl text-center animate-scaleIn relative overflow-hidden max-w-sm w-full border border-red-100">
+            <div className="absolute top-0 left-0 w-full h-2 bg-nba-red"></div>
+            
+            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+              <i className="fas fa-car-side text-nba-red text-3xl animate-pulse"></i>
+            </div>
+            
+            <h3 className="text-gray-800 text-xl font-black uppercase italic tracking-tighter mb-4">
+              Veículo Indisponível
+            </h3>
+            
+            <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-6">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status Atual</p>
+              <p className="text-sm font-bold text-gray-600">
+                O veículo <span className="text-nba-red font-black">{occupiedVehicleInfo.vehicle}</span> já está sendo utilizado por <span className="text-nba-red font-black">{occupiedVehicleInfo.user}</span>.
+              </p>
+            </div>
+
+            {occupiedVehicleInfo.otherAvailable ? (
+              <div className="bg-green-50 p-4 rounded-2xl border border-green-100 mb-6">
+                <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-1">Sugestão</p>
+                <p className="text-sm font-bold text-green-700">
+                  O veículo <span className="font-black">{occupiedVehicleInfo.otherAvailable}</span> está disponível no momento.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 mb-6">
+                <p className="text-xs font-bold text-orange-700">
+                  Não há outros veículos disponíveis no momento.
+                </p>
+              </div>
+            )}
+            
+            <button 
+              onClick={() => setOccupiedVehicleInfo(null)}
+              className="w-full py-4 bg-gray-800 text-white rounded-xl font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg active:scale-95"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
       )}
     </Layout>
   );

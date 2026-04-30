@@ -241,13 +241,15 @@ export const adminService = {
 
         if (!logsError && logs) {
           logs.forEach(log => {
-            if (log.action === 'LOGIN') {
+            if (log.action === 'LOGIN' || log.action === 'LOCATION_PERMISSION_DENIED') {
               activities.push({
                 id: log.id,
                 type: 'login',
                 userName: log.details?.userName || 'Usuário',
                 timestamp: log.created_at,
-                details: log.details?.method === 'NEW_REGISTER' ? 'Novo cadastro' : 'Login no sistema'
+                details: log.action === 'LOCATION_PERMISSION_DENIED' 
+                  ? 'Negou a permissão de localização' 
+                  : (log.details?.method === 'NEW_REGISTER' ? 'Novo cadastro' : 'Login no sistema')
               });
             }
           });

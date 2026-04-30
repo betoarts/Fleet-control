@@ -164,5 +164,5 @@ Após configurar, se o app já estiver rodando na Vercel, vá em **Deployments**
 
 ## 🧾 Licença
 
-Software Privado - Fleet Control® - Todos os Direitos Reservados.
+Software Privado - NBAPARK® - Todos os Direitos Reservados.
 Desenvolvido por Humberto Neto - 2026.

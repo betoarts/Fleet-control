@@ -72,29 +72,69 @@ export const userService = {
     }
   },
 
-  async getUserReservations(userId: string): Promise<Reservation[]> {
-    const { data, error } = await supabase
-      .from('reservations')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+  async logPermissionDenial(userId: string, userName: string) {
+    const { error } = await supabase
+      .from('user_logs')
+      .insert([
+        {
+          user_id: userId,
+          action: 'LOCATION_PERMISSION_DENIED',
+          details: {
+            userName,
+            timestamp: new Date().toISOString(),
+            message: 'O usuário negou a permissão de localização.'
+          }
+        }
+      ]);
 
     if (error) {
-      console.error('Error fetching reservations:', error);
-      throw error;
+      console.error('Error logging permission denial:', error);
     }
+  },
 
-    return data.map((r: any) => ({
-      id: r.id,
-      employeeName: r.employee_name,
-      vehicle: r.vehicle,
-      startOdometer: r.start_odometer,
-      endOdometer: r.end_odometer,
-      itinerary: r.itinerary,
-      startTime: r.start_time,
-      endTime: r.end_time,
-      status: r.status
-    }));
+  async getUserReservations(userId: string): Promise<Reservation[]> {
+    try {
+      const { data, error } = await supabase
+        .from('reservations')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching reservations:', error);
+        throw error;
+      }
+
+      return data.map((r: any) => ({
+        id: r.id,
+        employeeName: r.employee_name,
+        vehicle: r.vehicle,
+        startOdometer: r.start_odometer,
+        endOdometer: r.end_odometer,
+        itinerary: r.itinerary,
+        startTime: r.start_time,
+        endTime: r.end_time,
+        status: r.status
+      }));
+    } catch (err) {
+      console.error('Failed to get reservations:', err);
+      return [];
+    }
+  },
+
+  async validateUserExists(userId: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (error) return false;
+      return !!data;
+    } catch (e) {
+      return false;
+    }
   },
 
   async getAllReservations(): Promise<Reservation[]> {

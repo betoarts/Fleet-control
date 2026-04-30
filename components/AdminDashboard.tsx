@@ -468,6 +468,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onExit, currentU
               </div>
             </div>
 
+            {/* Alert Section for Permission Denial */}
+            {activities.some(a => a.type === 'login' && a.id.includes('permission-denied') || a.details?.includes('negou a permissão')) && (
+              <div className="bg-red-500/10 border-l-8 border-red-500 p-6 rounded-3xl shadow-lg relative overflow-hidden animate-pulse">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-red-500/20 rounded-2xl flex items-center justify-center">
+                    <i className="fas fa-location-arrow text-2xl text-red-400"></i>
+                  </div>
+                  <div>
+                    <h3 className="text-red-400 font-black uppercase italic tracking-tighter text-lg">Alertas de Localização</h3>
+                    <p className="text-red-300 text-xs font-bold uppercase tracking-wider">Usuários negaram permissão de GPS recentemente</p>
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {activities
+                    .filter(a => a.type === 'login' && a.details?.includes('negou a permissão'))
+                    .slice(0, 3)
+                    .map(alert => (
+                      <div key={alert.id} className="bg-white/5 p-3 rounded-xl border border-red-500/20 flex justify-between items-center">
+                        <div>
+                          <p className="text-sm font-black text-white uppercase">{alert.userName}</p>
+                          <p className="text-[10px] text-gray-400 uppercase font-bold">{new Date(alert.timestamp).toLocaleString()}</p>
+                        </div>
+                        <span className="text-[10px] bg-red-500 text-white px-2 py-1 rounded font-black uppercase tracking-widest">Negado</span>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            )}
+
             {/* Quick View: Top 3 + Recent Activity */}
             <div className="grid grid-cols-2 gap-6">
               {/* Top 3 */}

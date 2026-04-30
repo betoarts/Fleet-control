@@ -49,6 +49,14 @@ export interface Task {
   destinationLongitude?: number;
 }
 
+export interface Vehicle {
+  id: string;
+  name: string;
+  icon: string;
+  status: 'Livre' | 'Ocupado' | 'Bloqueado';
+  isBlocked: boolean;
+}
+
 export interface AppSettings {
   companyName: string;
   logoUrl: string;
