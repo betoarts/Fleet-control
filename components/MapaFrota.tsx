@@ -89,6 +89,34 @@ export const MapaFrota: React.FC<MapaFrotaProps> = ({ onExit }) => {
 
   // Use ref for active IDs to ensure real-time callbacks read the latest state without re-subscribing
   const activeReservationIdsRef = useRef<Set<string>>(new Set());
+  const filterVisiblePositions = useCallback(
+    (allPositions: VehiclePosition[], activeIds: Set<string>) => {
+      // Fail-open: if active reservations cannot be loaded, keep positions visible.
+      if (activeIds.size === 0) {
+        return allPositions;
+      }
+      return allPositions.filter((p) => activeIds.has(p.reservation_id));
+    },
+    []
+  );
+
+  const syncActiveReservations = useCallback(async () => {
+    try {
+      const [activeIds, latestPositions] = await Promise.all([
+        getActiveReservationIds(),
+        getLatestPositions()
+      ]);
+
+      const nextActiveSet = new Set(activeIds);
+      activeReservationIdsRef.current = nextActiveSet;
+      setActiveReservationIds(nextActiveSet);
+
+      const validPositions = filterVisiblePositions(latestPositions, nextActiveSet);
+      setPositions(validPositions);
+    } catch (error) {
+      console.error('Error syncing active reservations:', error);
+    }
+  }, [filterVisiblePositions]);
 
   // Load initial data
   useEffect(() => {
@@ -105,8 +133,7 @@ export const MapaFrota: React.FC<MapaFrotaProps> = ({ onExit }) => {
         activeReservationIdsRef.current = activeIdsSet;
         setActiveReservationIds(activeIdsSet);
         
-        // Filter positions to only show active reservations
-        const validPositions = positionsData.filter(p => activeIdsSet.has(p.reservation_id));
+        const validPositions = filterVisiblePositions(positionsData, activeIdsSet);
         setPositions(validPositions);
         setNotifications(notificationsData);
       } catch (error) {
@@ -116,7 +143,16 @@ export const MapaFrota: React.FC<MapaFrotaProps> = ({ onExit }) => {
       }
     }
     loadData();
-  }, []);
+  }, [filterVisiblePositions]);
+
+  // Fallback sync in case realtime subscriptions are delayed/unavailable.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      syncActiveReservations();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [syncActiveReservations]);
 
   // Subscribe to real-time updates
   useEffect(() => {
@@ -154,7 +190,10 @@ export const MapaFrota: React.FC<MapaFrotaProps> = ({ onExit }) => {
     // 2. Listen for Positions
     const unsubscribePositions = subscribeToPositions((newPosition) => {
       // STRICT CHECK: Only process position if reservation is currently active in our Ref
-      if (!activeReservationIdsRef.current.has(newPosition.reservation_id)) {
+      if (
+        activeReservationIdsRef.current.size > 0 &&
+        !activeReservationIdsRef.current.has(newPosition.reservation_id)
+      ) {
         console.debug('Ignoring position for inactive/completed reservation:', newPosition.reservation_id);
         return;
       }
@@ -212,8 +251,8 @@ export const MapaFrota: React.FC<MapaFrotaProps> = ({ onExit }) => {
     }
   };
 
-  // Format speed
-  const formatSpeed = (speed: number) => {
+  const formatSpeed = (speed: number | null | undefined) => {
+    if (speed == null) return '0.0 km/h';
     return `${speed.toFixed(1)} km/h`;
   };
 
