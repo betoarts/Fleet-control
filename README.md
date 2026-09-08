@@ -1,168 +1,232 @@
-# Fleet Control 🚗📊
+# Fleet Control
 
-**Fleet Control** é uma solução abrangente de gerenciamento de frota desenvolvida para a **Controle de Frota**. Combina uma aplicação web moderna em React com um banco de dados PostgreSQL robusto para gerenciamento de viagens e veículos.
+> Plataforma PWA para gestão de veículos, viagens, motoristas, tarefas, quilometragem e indicadores operacionais.
 
-> **Principais Funcionalidades**: Análise com IA, Rastreamento em Tempo Real e Dashboard Administrativo.
+![Fleet Control — Gestão, Rastreamento e Inteligência](https://github.com/betoarts/fleet-control/raw/main/docs/fleet-control-cover.jpg)
 
----
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=20232a)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## 💻 Web App
+O **Fleet Control** centraliza o controle de uma frota em uma interface moderna, responsiva e instalável. Motoristas registram viagens e tarefas, enquanto gestores acompanham veículos, rotas, quilometragem, manutenção e resultados em um dashboard operacional.
 
-Esta aplicação foi construída como um **Web App Responsivo** otimizado para Desktop e Mobile (via Navegador).
+> **Status:** em desenvolvimento ativo. Revise permissões, políticas do Supabase e chaves de ambiente antes de disponibilizar o sistema em produção.
 
-### Funcionalidades Web
+## Principais recursos
 
-- **Design Responsivo**: Funciona em navegadores Desktop, Tablet e Mobile.
-- **Capacidade Offline**: Service workers armazenam recursos em cache para uso offline (PWA).
-- **Instalável**: Pode ser instalado na tela inicial através do navegador.
-- **Geolocalização**: Rastreia coordenadas da rota em tempo real durante as viagens.
+- **Registro de viagens:** início e encerramento com validação de hodômetro e quilometragem.
+- **Rastreamento geográfico:** captura de coordenadas e visualização de rotas no mapa.
+- **Gestão de veículos:** cadastro, disponibilidade, bloqueio e status de manutenção.
+- **Dashboard administrativo:** KPIs, viagens ativas, usuários, quilometragem e atividade recente.
+- **Mapa em tempo real:** última localização conhecida dos veículos em operação.
+- **Gestão de motoristas:** histórico, atividade e ranking por quilometragem.
+- **Tarefas operacionais:** criação, prioridade, atribuição e acompanhamento em fluxo Kanban.
+- **Relatórios:** filtros operacionais e exportação para CSV.
+- **Inteligência artificial:** análise de itinerários e resumos periódicos com Google Gemini.
+- **PWA responsivo:** uso em desktop, tablet e celular, com possibilidade de instalação.
+- **Modo offline:** cache de recursos por Service Worker para melhorar a continuidade de uso.
+- **Personalização:** marca, preferências gerais e configurações da operação.
 
----
+## Arquitetura
 
-## 🛠️ Módulos Funcionais
+    fleet-control/
+    ├── App.tsx                  # Aplicação e roteamento da interface
+    ├── index.tsx                # Entrada do React
+    ├── components/              # Dashboard, mapas, formulários e UI
+    ├── services/                # IA, rastreamento e regras administrativas
+    ├── lib/                     # Cliente e integrações com dados
+    ├── database/                # SQL de inicialização e estrutura do banco
+    ├── public/                  # Ícones e assets públicos da PWA
+    ├── tests/                   # Testes e cenários automatizados
+    ├── Dockerfile               # Imagem da aplicação
+    ├── docker-compose.yml       # PostgreSQL, PostgREST e Nginx
+    ├── nginx.conf               # Gateway local
+    ├── vite.config.ts           # Vite e configuração PWA
+    └── application-docs/        # Documentação funcional
 
-### 1. App do Usuário (Motorista)
+## Stack tecnológica
 
-- **Registro de Viagem**: Fluxo fácil de "Iniciar/Parar" com validação de hodômetro (KM).
-- **Itinerário Inteligente**: A IA analisa a descrição do destino para categorizar a viagem.
-- **Histórico**: Registro pessoal de todas as viagens passadas com indicadores de status.
-- **Gerenciamento de Tarefas**: "Lista de Tarefas" integrada para motoristas com níveis de prioridade e status tipo Kanban.
-- **Seleção de Veículo**: Visualização ao vivo de veículos disponíveis (não bloqueados).
+| Camada | Tecnologia |
+| --- | --- |
+| Frontend | React 19 + TypeScript |
+| Build | Vite 6 |
+| Estilos | Tailwind CSS |
+| Banco de dados | PostgreSQL 17 |
+| API local | PostgREST 12 + Nginx |
+| Nuvem | Supabase |
+| Mapas | Leaflet + React-Leaflet |
+| Gráficos | Recharts |
+| IA | Google Gemini via @google/genai |
+| PWA | vite-plugin-pwa |
+| Testes | Playwright |
+| Deploy | Vercel ou Netlify |
 
-### 2. Dashboard Administrativo (Desktop)
+## Pré-requisitos
 
-Acessado via atalho secreto (`Ctrl + Shift + A`) ou Login de Admin.
+- Node.js 18 ou superior;
+- npm;
+- Docker Desktop para o ambiente local;
+- uma chave da API Google Gemini, quando os recursos de IA forem utilizados;
+- um projeto Supabase para implantação em nuvem.
 
-- **Visão Geral de KPIs**: Total de KM, Total de Viagens, Usuários Ativos e contagem de Viagens em Andamento.
-- **Mapa em Tempo Real**: Mapa em tela cheia mostrando a última localização conhecida dos veículos ativos.
-- **Feed de Atividade ao Vivo**: Fluxo em tempo real de viagens iniciando, terminando e logins de usuários.
-- **Ranking de Motoristas**: Tabela de classificação gamificada baseada em KM rodados.
-- **Gerenciamento de Veículos**: Registrar, editar, bloquear/desbloquear veículos (ex: para manutenção).
-- **Atribuição de Tarefas**: Criar e atribuir tarefas a motoristas específicos.
-- **Relatórios**: Tabela de dados filtrável com capacidade de **Exportação CSV**.
-- **Configurações do Sistema**: Configurar marca da empresa, URLs de Webhook e preferências gerais.
+## Execução local com Docker
 
-### 3. Inteligência Artificial (Google Gemini)
+1. Suba PostgreSQL, PostgREST e o gateway Nginx:
 
-- **Resumos Semanais**: Gera relatórios em linguagem natural sobre a eficiência da frota.
-- **Análise de Itinerário**: Etiqueta automaticamente padrões de uso corporativo vs. pessoal.
+       docker compose up -d
 
----
+2. Instale as dependências:
 
-## 🚀 Tecnologias Utilizadas
+       npm install
 
-- **Framework**: React 19 + TypeScript + Vite
-- **Estilização**: Tailwind CSS v4 (Design System Personalizado)
-- **Backend / Banco de Dados**: PostgreSQL Local (via Docker + PostgREST + Nginx Gateway)
-- **Motor de IA**: Google Gemini Flash 1.5 (`@google/genai`)
-- **Mapas**: Leaflet / React-Leaflet
-- **Gráficos**: Recharts
-- **Ícones**: FontAwesome 6
+3. Crie o arquivo `.env.local`:
 
----
+       VITE_SUPABASE_URL=http://localhost:3000
+       VITE_SUPABASE_ANON_KEY=sua_chave_anon_local
+       VITE_GEMINI_API_KEY=sua_chave_gemini
 
-## 📂 Estrutura do Projeto
+4. Inicie o frontend:
 
-```bash
-FleetControl/
-├── src/
-│   ├── components/      # Componentes de UI (AdminDashboard, Mapas, Forms)
-│   ├── services/        # Lógica de Negócios (Gemini, Rastreamento, Admin)
-│   ├── lib/             # Camada de Conexão com o Banco/API
-│   └── App.tsx          # Entrada Principal & Lógica de Roteamento
-├── database/            # Scripts de inicialização do banco local (SQL)
-└── docker-compose.yml   # Orquestração do banco, API e Gateway local
-```
+       npm run dev -- --host
 
----
+5. Acesse:
 
-## ⚙️ Instalação e Configuração
+       http://localhost:3000
 
-### Pré-requisitos
+O script SQL em `database/init.sql` inicializa as tabelas e estruturas previstas para o ambiente local.
 
-- Node.js (v18+)
-- Local: **Docker Desktop** (para rodar o banco local)
-- Chave de API Google Gemini
+## Execução sem Docker
 
-### 1. Iniciar Infraestrutura Local (Docker)
+Para apontar o frontend diretamente para o Supabase, configure:
 
-Para rodar o banco de dados e a API localmente:
+       VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+       VITE_SUPABASE_ANON_KEY=sua_chave_anon
+       VITE_GEMINI_API_KEY=sua_chave_gemini
 
-```bash
-# Inicia PostgreSQL, PostgREST e Gateway Nginx
-docker compose up -d
-```
+Depois execute:
 
-### 2. Variáveis de Ambiente
+       npm install
+       npm run dev
 
-Crie um arquivo `.env` no diretório raiz:
+## Variáveis de ambiente
 
-```env
-# URL da API gerada pelo PostgREST
-VITE_API_URL=http://localhost:3000
-VITE_API_KEY=sua_chave_de_acesso_local
+| Variável | Obrigatória | Finalidade |
+| --- | --- | --- |
+| `VITE_SUPABASE_URL` | Sim | URL do projeto Supabase |
+| `VITE_SUPABASE_ANON_KEY` | Sim | Chave pública anon do Supabase |
+| `VITE_GEMINI_API_KEY` | Para IA | Chave da API Google Gemini |
+| `SUPABASE_URL` | Alternativa | URL reconhecida pela configuração de build |
+| `SUPABASE_ANON_KEY` | Alternativa | Chave reconhecida pela configuração de build |
 
-# Inteligência Artificial
-VITE_GEMINI_API_KEY=sua_chave_gemini
-```
+Nunca versione arquivos de ambiente ou chaves privadas. A chave anon do Supabase deve estar protegida pelas políticas RLS adequadas.
 
-### 3. Instalar Dependências
+## Banco de dados e Supabase
 
-```bash
-npm install
-```
+### Ambiente local
 
-### 4. Rodar para Web (Desenvolvimento + Rede)
+O Docker Compose disponibiliza:
 
-```bash
-npm run dev -- --host
-```
+| Serviço | Porta | Função |
+| --- | ---: | --- |
+| PostgreSQL 17 | 5432 | Persistência dos dados |
+| PostgREST | interna 3000 | API REST sobre o PostgreSQL |
+| Nginx | 3000 | Gateway para o frontend e API |
 
-O aplicativo estará disponível em:
+As credenciais definidas no Compose são destinadas somente ao desenvolvimento. Troque todas as senhas e o segredo JWT antes de usar uma infraestrutura compartilhada.
 
-- Local: **http://seu_ip:3001**
-- Rede: **http://10.100.110.141:3001** (Para acesso via celular/tablet)
+### Implantação no Supabase
 
-### 🔑 Acesso Padrão
+1. Crie um projeto no [Supabase](https://supabase.com/).
+2. Execute o conteúdo de `database/init.sql` no SQL Editor.
+3. Configure RLS e as permissões de acesso necessárias.
+4. Copie a URL e a chave anon em `.env.local` ou nas variáveis do provedor de deploy.
+5. Faça um novo build após alterar as variáveis.
 
-- **Usuário**: Administrador
-- **Telefone**: 999999999
-- **Atalho Admin**: `Ctrl + Shift + A`
+## Funcionalidades administrativas
 
----
+O painel administrativo reúne:
 
-## 🌎 Deploy (Vercel + Supabase Cloud)
+- visão geral de veículos, viagens, usuários e quilometragem;
+- mapa com posições recentes;
+- feed de atividade;
+- ranking de motoristas;
+- cadastro e bloqueio de veículos;
+- criação e atribuição de tarefas;
+- relatórios filtráveis e exportação CSV;
+- configurações de marca e operação.
 
-Para colocar a aplicação online, o Frontend (Vite) deve subir no **Vercel** e o Banco de Dados no **Supabase**.
+Os recursos administrativos devem ser protegidos por autenticação e autorização no banco. Um atalho visual ou controle no frontend não substitui políticas de segurança no Supabase.
 
-### 1. Configurar o Banco (Supabase)
+## Inteligência artificial
 
-O Docker é apenas para desenvolvimento local. Para a nuvem:
+A integração com Google Gemini apoia:
 
-1.  Crie um projeto em [Supabase.com](https://supabase.com).
-2.  Vá em **SQL Editor** -> **New Query**.
-3.  Cole o conteúdo do arquivo local `database/init.sql` e clique em **Run**.
-4.  _(Opcional)_ Em **Table Editor**, você pode desativar o **RLS** (Row Level Security) nas tabelas para facilitar a migração inicial.
+- classificação e análise de itinerários;
+- identificação de viagens corporativas ou pessoais;
+- geração de resumos semanais sobre eficiência da frota.
 
-### 2. Configurar o Frontend (Vercel)
+As respostas da IA devem ser tratadas como apoio operacional. Valide informações antes de utilizá-las para decisões administrativas, financeiras ou disciplinares.
 
-Ao conectar o repositório na Vercel, você pode usar a **integração automática do Supabase** ou configurar as **Environment Variables** manualmente.
+## PWA e uso mobile
 
-> **DICA**: O projeto está configurado para aceitar tanto o prefixo `VITE_` quanto o prefixo `SUPABASE_` (padrão da Vercel).
+A aplicação foi configurada para:
 
-| Nome da Variável          | Alternativa (Vercel Integration) | Origem no Supabase (Settings -> API) |
-| :------------------------ | :------------------------------- | :----------------------------------- |
-| **`VITE_API_URL`**        | `SUPABASE_URL`                   | `Project URL`                        |
-| **`VITE_API_KEY`**        | `SUPABASE_ANON_KEY`              | `anon` / `public` Key                |
-| **`VITE_GEMINI_API_KEY`** | -                                | Sua chave do Google Gemini Flash     |
+- funcionar em telas desktop, tablet e celular;
+- ser instalada pela opção do navegador;
+- atualizar o Service Worker automaticamente;
+- manter recursos estáticos disponíveis após o primeiro carregamento;
+- solicitar permissões de câmera quando necessárias ao fluxo da aplicação.
 
-### 3. Sincronização
+## Scripts disponíveis
 
-Após configurar, se o app já estiver rodando na Vercel, vá em **Deployments** e faça um **Redeploy** para que as novas variáveis sejam aplicadas ao build.
+| Comando | Descrição |
+| --- | --- |
+| `npm install` | Instala dependências |
+| `npm run dev` | Inicia o servidor de desenvolvimento |
+| `npm run dev -- --host` | Permite acesso pela rede local |
+| `npm run build` | Gera o build de produção |
+| `npm run preview` | Visualiza o build localmente |
+| `npm run lint` | Executa a verificação TypeScript |
+| `npm run type-check` | Valida os tipos TypeScript |
+| `docker compose up -d` | Inicia a infraestrutura local |
+| `docker compose down` | Para a infraestrutura local |
 
----
+## Deploy na Vercel
 
-## 🧾 Licença
+1. Importe o repositório na [Vercel](https://vercel.com/).
+2. Configure as variáveis `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` e, se necessário, `VITE_GEMINI_API_KEY`.
+3. Confirme que o comando de build é `npm run build`.
+4. Faça o deploy.
+5. Após alterar variáveis, execute um novo redeploy.
 
-Software Privado - NBAPARK® - Todos os Direitos Reservados.
-Desenvolvido por Humberto Neto - 2026.
+O projeto também contém configurações compatíveis com Netlify. Não inclua chaves secretas no código do frontend.
+
+## Segurança
+
+- Ative e revise RLS em todas as tabelas do Supabase.
+- Nunca exponha a service role key no frontend.
+- Troque as credenciais padrão do Docker e o segredo JWT.
+- Restrinja o acesso ao PostgreSQL e ao PostgREST em ambientes compartilhados.
+- Valide permissões no banco, não apenas na interface.
+- Limite o uso da API de IA e monitore custos.
+- Remova dados pessoais desnecessários dos prompts enviados à IA.
+- Faça backups e teste restaurações periodicamente.
+- Proteja dados de localização e histórico de motoristas conforme a legislação aplicável.
+
+## Contribuição
+
+1. Crie uma branch para a alteração.
+2. Mantenha componentes, serviços e tipos organizados.
+3. Execute `npm run lint`, `npm run build` e os testes relevantes.
+4. Atualize a documentação ao alterar fluxos ou integrações.
+5. Abra um pull request com descrição, contexto e validações realizadas.
+
+## Licença
+
+Este projeto está distribuído sob a licença [MIT](LICENSE).
+
+## Autor
+
+Desenvolvido por [betoarts](https://github.com/betoarts).
