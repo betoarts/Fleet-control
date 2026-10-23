@@ -160,6 +160,8 @@ const App: React.FC = () => {
   // handleUnlock removed
 
   const handleLogout = () => {
+    stopTracking();
+    setTrackingStatus('idle');
     setUser(null);
     localStorage.removeItem('nbapark_user');
   };
@@ -169,8 +171,19 @@ const App: React.FC = () => {
       localStorage.setItem('nbapark_user', JSON.stringify(user));
       // Carregar reservas do Supabase se usuário estiver logado
       userService.getUserReservations(user.id)
-        .then(setReservations)
+        .then(resList => {
+          setReservations(resList);
+          // Retomar rastreamento automaticamente se houver corrida em andamento
+          const activeTrip = resList.find(r => r.status === 'active');
+          if (activeTrip && !isTrackingActive()) {
+            startTracking(activeTrip.id, activeTrip.vehicle, activeTrip.employeeName)
+              .then(started => setTrackingStatus(started ? 'active' : 'error'));
+          }
+        })
         .catch(err => console.error("Erro ao carregar reservas:", err));
+    } else {
+      stopTracking();
+      setTrackingStatus('idle');
     }
   }, [user]);
 
@@ -453,6 +466,10 @@ const App: React.FC = () => {
   const confirmEndTrip = (id: string) => {
     const endKm = Number(endKmValues[id]);
     const trip = reservations.find(r => r.id === id);
+
+    // Interrompe imediatamente o hardware de GPS no dispositivo
+    stopTracking();
+    setTrackingStatus('idle');
     
     const updatedTrip = {
        ...trip,
@@ -478,9 +495,6 @@ const App: React.FC = () => {
               duracao_minutos: Math.round((new Date().getTime() - new Date(trip.startTime).getTime()) / 60000)
             });
 
-            // Stop GPS tracking
-            stopTracking();
-            setTrackingStatus('idle');
             console.log('GPS tracking stopped for trip:', trip.id);
           }
          
@@ -504,18 +518,6 @@ const App: React.FC = () => {
       delete next[id];
       return next;
     });
-
-    // Removido triggerSuccessAnimation daqui para executar somente no sucesso da promise
-
-    setConfirmingId(null);
-    setEndKmValues(prev => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
-
-    // triggerSuccessAnimation agora chamado no then
-    // triggerSuccessAnimation();
   };
 
   const triggerSuccessAnimation = () => {
