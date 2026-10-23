@@ -17,15 +17,16 @@ O **Fleet Control** centraliza o controle de uma frota em uma interface moderna,
 ## Principais recursos
 
 - **Registro de viagens:** início e encerramento com validação de hodômetro e quilometragem.
-- **Rastreamento geográfico:** captura de coordenadas e visualização de rotas no mapa.
+- **Rastreamento geográfico inteligente:** captura assertiva com filtro de ruído GPS (<50m), envio imediato por deslocamento (>=10m) ou curvas (>=25°), detecção de veículo parado e Screen Wake Lock para manter a tela ativa no veículo.
+- **Interrupção garantida:** desligamento instantâneo do hardware de GPS ao finalizar a corrida ou ao deslogar da aplicação.
 - **Gestão de veículos:** cadastro, disponibilidade, bloqueio e status de manutenção.
 - **Dashboard administrativo:** KPIs, viagens ativas, usuários, quilometragem e atividade recente.
-- **Mapa em tempo real:** última localização conhecida dos veículos em operação.
+- **Mapa em tempo real estrito:** visualização exclusiva de veículos com corridas ativas em andamento, sincronizado via Supabase Realtime.
 - **Gestão de motoristas:** histórico, atividade e ranking por quilometragem.
 - **Tarefas operacionais:** criação, prioridade, atribuição e acompanhamento em fluxo Kanban.
-- **Relatórios:** filtros operacionais e exportação para CSV.
+- **Relatórios operacionais e relatórios PDF:** filtros operacionais, exportação CSV e emissão de relatórios profissionais em PDF com gráficos e KPIs.
 - **Inteligência artificial:** análise de itinerários e resumos periódicos com Google Gemini.
-- **PWA responsivo:** uso em desktop, tablet e celular, com possibilidade de instalação.
+- **PWA responsivo e Aplicativo Android (APK):** instalável via navegador como WebAPK nativo ou compilado como pacote APK assinado via terminal.
 - **Modo offline:** cache de recursos por Service Worker para melhorar a continuidade de uso.
 - **Personalização:** marca, preferências gerais e configurações da operação.
 
@@ -169,28 +170,29 @@ A integração com Google Gemini apoia:
 
 As respostas da IA devem ser tratadas como apoio operacional. Valide informações antes de utilizá-las para decisões administrativas, financeiras ou disciplinares.
 
-## PWA e uso mobile
+## PWA e Aplicativo Android (APK)
 
-A aplicação foi configurada para:
+A aplicação foi projetada para operação móvel contínua em veículos:
 
-- funcionar em telas desktop, tablet e celular;
-- ser instalada pela opção do navegador;
-- atualizar o Service Worker automaticamente;
-- manter recursos estáticos disponíveis após o primeiro carregamento;
-- solicitar permissões de câmera quando necessárias ao fluxo da aplicação.
+- **Instalação PWA / WebAPK:** instale direto pelo Google Chrome no smartphone sem precisar baixar arquivos avulsos;
+- **Geração de APK Nativo via Terminal:** execute `npm run build:apk` para gerar um `.apk` assinado e pronto para distribuição direta via Trusted Web Activity (TWA);
+- **Screen Wake Lock:** a tela do celular é mantida ativa automaticamente durante a corrida para evitar que o Android congele o rastreamento em segundo plano;
+- **Alta precisão em movimento:** algoritmo reativo com filtro de acurácia (< 50m) e envio imediato ao detectar curvas acentuadas ou deslocamento >= 10m;
+- **Interrupção instantânea:** desliga o hardware de GPS no mesmo milissegundo em que o motorista confirma o encerramento da corrida.
 
 ## Scripts disponíveis
 
 | Comando | Descrição |
 | --- | --- |
-| `npm install` | Instala dependências |
-| `npm run dev` | Inicia o servidor de desenvolvimento |
-| `npm run dev -- --host` | Permite acesso pela rede local |
-| `npm run build` | Gera o build de produção |
+| `npm install` | Instala dependências do projeto |
+| `npm run dev` | Inicia o servidor de desenvolvimento local |
+| `npm run dev -- --host` | Permite acesso pelo celular na mesma rede local |
+| `npm run build` | Gera o build de produção Vite + PWA |
 | `npm run preview` | Visualiza o build localmente |
 | `npm run lint` | Executa a verificação TypeScript |
-| `npm run type-check` | Valida os tipos TypeScript |
-| `docker compose up -d` | Inicia a infraestrutura local |
+| `npm run type-check` | Valida todos os tipos TypeScript |
+| `npm run build:apk` | Gera e assina o pacote APK Android via CloudAPK (PWABuilder) |
+| `docker compose up -d` | Inicia a infraestrutura local (PostgreSQL + PostgREST + Nginx) |
 | `docker compose down` | Para a infraestrutura local |
 
 ## Deploy na Vercel

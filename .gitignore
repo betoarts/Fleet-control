@@ -26,3 +26,8 @@ dist-ssr
 *.sln
 *.sw?
 node_modules
+
+# Android builds
+*.apk
+*.aab
+android-apk/
