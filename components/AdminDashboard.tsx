@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Reservation, Task, AppSettings } from '../types';
 import { MapaFrota } from './MapaFrota';
 import { TaskMetrics } from './TaskMetrics';
+import { pdfReportService } from '../services/pdfReportService';
 
 interface AdminDashboardProps {
   onExit: () => void;
@@ -138,6 +139,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onExit, currentU
       loadReportData();
     }
   }, [activeSection, filters]);
+
+  // Export PDF Detalhado
+  const exportPDF = () => {
+    if (reportData.length === 0) return alert('Sem dados para exportar.');
+    pdfReportService.generateDetailedReport(
+      reportData,
+      filters,
+      {
+        companyName: globalAppSettings?.companyName || 'NBAPARK Fleet Control',
+        generatedBy: currentUser?.name || 'Administrador'
+      }
+    );
+  };
 
   // Export CSV
   const exportCSV = () => {
@@ -858,7 +872,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onExit, currentU
                 Filtros
               </h3>
 
-              <div className="grid grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Data Início</label>
                   <input
@@ -884,8 +898,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onExit, currentU
                     onChange={(e) => setFilters({ ...filters, vehicle: e.target.value || undefined })}
                     className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white font-bold focus:border-blue-500 outline-none transition-all"
                   >
-                    <option value="" className="bg-gray-800 text-white">Todos</option>
-                    <option value="Polo Volkswagen" className="bg-gray-800 text-white">Polo Volkswagen</option>
+                    <option value="" className="bg-gray-800 text-white">Todos os Veículos</option>
+                    {vehicles.map((v) => (
+                      <option key={v.id} value={v.vehicleName} className="bg-gray-800 text-white">
+                        {v.vehicleName}
+                      </option>
+                    ))}
+                    {!vehicles.some(v => v.vehicleName === 'Polo Volkswagen') && (
+                      <option value="Polo Volkswagen" className="bg-gray-800 text-white">Polo Volkswagen</option>
+                    )}
                   </select>
                 </div>
                 <div>
@@ -895,17 +916,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onExit, currentU
                     onChange={(e) => setFilters({ ...filters, status: e.target.value as any || undefined })}
                     className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white font-bold focus:border-blue-500 outline-none transition-all"
                   >
-                    <option value="" className="bg-gray-800 text-white">Todos</option>
+                    <option value="" className="bg-gray-800 text-white">Todos os Status</option>
                     <option value="completed" className="bg-gray-800 text-white">Finalizadas</option>
                     <option value="active" className="bg-gray-800 text-white">Ativas</option>
                   </select>
                 </div>
                 <div className="flex items-end">
                   <button
-                    onClick={exportCSV}
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold px-6 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                    onClick={exportPDF}
+                    title="Baixar relatório executivo em PDF com sumário e dados detalhados"
+                    className="w-full bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-500 shadow-lg shadow-red-500/20 text-white font-bold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 group cursor-pointer"
                   >
-                    <i className="fas fa-download"></i>
+                    <i className="fas fa-file-pdf text-lg group-hover:scale-110 transition-transform"></i>
+                    Exportar PDF
+                  </button>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={exportCSV}
+                    title="Baixar dados brutos em formato de planilha CSV"
+                    className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-gray-300 hover:text-white font-bold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <i className="fas fa-file-csv text-lg text-emerald-400"></i>
                     Exportar CSV
                   </button>
                 </div>
@@ -961,7 +993,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onExit, currentU
 
                 {reportData.length > 20 && (
                   <p className="text-center text-gray-500 text-sm py-4">
-                    Exibindo 20 de {reportData.length} registros. Exporte o CSV para ver todos.
+                    Exibindo 20 de {reportData.length} registros. Exporte o relatório em PDF detalhado ou CSV para ver todos.
                   </p>
                 )}
               </div>
