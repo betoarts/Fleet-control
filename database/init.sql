@@ -197,21 +197,23 @@ CREATE INDEX IF NOT EXISTS idx_notificacoes_parada_created ON public.notificacoe
 
 -- View: Latest position per vehicle (for real-time map)
 CREATE OR REPLACE VIEW public.veiculos_posicoes_atual AS
-SELECT DISTINCT ON (veiculo_id)
-  id,
-  reservation_id,
-  veiculo_id,
-  motorista_nome,
-  lat,
-  lng,
-  velocidade,
-  precisao,
-  heading,
-  timestamp,
-  parado,
-  parado_desde
-FROM public.veiculos_posicoes
-ORDER BY veiculo_id, timestamp DESC;
+SELECT DISTINCT ON (vp.veiculo_id)
+  vp.id,
+  vp.reservation_id,
+  vp.veiculo_id,
+  vp.motorista_nome,
+  vp.lat,
+  vp.lng,
+  vp.velocidade,
+  vp.precisao,
+  vp.heading,
+  vp.timestamp,
+  vp.parado,
+  vp.parado_desde
+FROM public.veiculos_posicoes vp
+INNER JOIN public.reservations r ON r.id = vp.reservation_id
+WHERE r.status = 'active'
+ORDER BY vp.veiculo_id, vp.timestamp DESC;
 
 -- View: Active trips
 CREATE OR REPLACE VIEW public.active_trips AS

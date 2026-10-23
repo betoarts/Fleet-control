@@ -91,10 +91,7 @@ export const MapaFrota: React.FC<MapaFrotaProps> = ({ onExit }) => {
   const activeReservationIdsRef = useRef<Set<string>>(new Set());
   const filterVisiblePositions = useCallback(
     (allPositions: VehiclePosition[], activeIds: Set<string>) => {
-      // Fail-open: if active reservations cannot be loaded, keep positions visible.
-      if (activeIds.size === 0) {
-        return allPositions;
-      }
+      // Apenas exibe posições de veículos com corrida ativa
       return allPositions.filter((p) => activeIds.has(p.reservation_id));
     },
     []
@@ -189,11 +186,8 @@ export const MapaFrota: React.FC<MapaFrotaProps> = ({ onExit }) => {
 
     // 2. Listen for Positions
     const unsubscribePositions = subscribeToPositions((newPosition) => {
-      // STRICT CHECK: Only process position if reservation is currently active in our Ref
-      if (
-        activeReservationIdsRef.current.size > 0 &&
-        !activeReservationIdsRef.current.has(newPosition.reservation_id)
-      ) {
+      // STRICT CHECK: Only process position if reservation is currently active
+      if (!activeReservationIdsRef.current.has(newPosition.reservation_id)) {
         console.debug('Ignoring position for inactive/completed reservation:', newPosition.reservation_id);
         return;
       }
