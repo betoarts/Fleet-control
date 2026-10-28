@@ -79,7 +79,7 @@ jobs:
 
       - name: Compilar APK Android via Terminal
         run: |
-          npx tauri android build --apk --target aarch64,armv7 --ci
+          npx tauri android build --apk --target aarch64 armv7 --ci
 
       - name: Assinar e Validar APKs com apksigner
         id: sign-apk
