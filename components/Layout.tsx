@@ -79,7 +79,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
         </main>
 
         {/* Floating iOS Glass Tab Bar (Dock) */}
-        <nav className="fixed md:absolute bottom-3 md:bottom-5 left-3 right-3 md:left-4 md:right-4 z-50 apple-glass-dock rounded-[32px] px-2 py-1.5 flex items-center justify-between shadow-glass-float">
+        <nav className="fixed md:absolute bottom-[max(0.75rem,env(safe-area-inset-bottom))] md:bottom-5 left-3 right-3 md:left-4 md:right-4 z-50 apple-glass-dock rounded-[32px] px-2 py-1.5 flex items-center justify-between shadow-glass-float">
           {/* Left Tabs (Início, Tarefas) */}
           <div className="flex items-center flex-1 justify-around">
             <button 

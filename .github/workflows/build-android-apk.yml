@@ -1,0 +1,85 @@
+name: Build Android APK (Tauri v2 Rust)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    name: Compilar APK Android via Tauri v2 (Rust)
+    runs-on: ubuntu-latest
+
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://kxfsmifgymckdykompqg.supabase.co' }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4ZnNtaWZneW1ja2R5a29tcHFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3ODM0NjMsImV4cCI6MjA5MjM1OTQ2M30.XI72AIMJtWasm09k9XFHGV94l6NEnJMu72Z7gZuSq9I' }}
+
+    steps:
+      - name: Checkout Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar Dependências NPM
+        run: npm ci || npm install
+
+      - name: Configurar Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar Android NDK e Ferramentas de Compilação
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager --install "ndk;26.1.10909125" "build-tools;34.0.0" "platforms;android-34"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125" >> $GITHUB_ENV
+
+      - name: Configurar Rust Toolchain com Alvos Android
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi
+
+      - name: Cache de Compilação Rust
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Compilar Frontend (React + Vite + Apple Liquid Glass)
+        run: npm run build
+
+      - name: Inicializar Projeto Android Tauri v2
+        run: |
+          npx tauri android init --ci
+          node scripts/configure-android-manifest.js
+
+      - name: Compilar APK Android Release via Terminal
+        run: |
+          npx tauri android build --apk --target aarch64 --ci
+
+      - name: Localizar e Renomear APK Gerado
+        id: locate-apk
+        run: |
+          mkdir -p release-output
+          find src-tauri/gen/android/app/build/outputs/apk -name "*.apk" -exec cp {} release-output/FleetControl-Tauri-v2.apk \;
+          echo "APK_PATH=release-output/FleetControl-Tauri-v2.apk" >> $GITHUB_OUTPUT
+          ls -la release-output
+
+      - name: Publicar APK como Artifact para Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: FleetControl-Tauri-v2-Android-APK
+          path: release-output/FleetControl-Tauri-v2.apk
+          if-no-files-found: error

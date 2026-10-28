@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { nativeBridge, NativePosition } from './nativeBridge';
 
 // Types
 export interface VehiclePosition {
@@ -37,11 +38,11 @@ interface LastSentData {
 
 interface TrackingState {
   isTracking: boolean;
-  watchId: number | null;
+  watchId: number | string | null;
   reservationId: string | null;
   vehicleId: string | null;
   driverName: string | null;
-  lastPosition: GeolocationPosition | null;
+  lastPosition: NativePosition | null;
   lastSent: LastSentData | null;
   stoppedSince: string | null;
   heartbeatInterval: ReturnType<typeof setInterval> | null;
@@ -133,7 +134,7 @@ async function releaseWakeLock(): Promise<void> {
 /**
  * Send position to database with stop detection and deduplication
  */
-async function sendPositionToServer(position: GeolocationPosition, force = false): Promise<void> {
+async function sendPositionToServer(position: NativePosition, force = false): Promise<void> {
   if (!state.isTracking || !state.reservationId || !state.vehicleId) return;
   if (state.isSending) return;
 
@@ -165,6 +166,10 @@ async function sendPositionToServer(position: GeolocationPosition, force = false
   if (isStopped) {
     if (!state.stoppedSince) {
       state.stoppedSince = new Date(position.timestamp).toISOString();
+      nativeBridge.sendNotification(
+        'Frota - Parada Detectada',
+        `Veículo parado detectado em ${new Date(position.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+      );
     }
   } else {
     state.stoppedSince = null;
@@ -211,7 +216,7 @@ async function sendPositionToServer(position: GeolocationPosition, force = false
 /**
  * Evaluate incoming GPS watch position and send assertively
  */
-function handlePositionUpdate(position: GeolocationPosition): void {
+function handlePositionUpdate(position: NativePosition): void {
   if (!state.isTracking) return;
 
   state.lastPosition = position;
@@ -269,11 +274,6 @@ export async function startTracking(
     stopTracking();
   }
 
-  if (typeof navigator === 'undefined' || !navigator.geolocation) {
-    console.error('Geolocation is not supported by this browser/environment');
-    return false;
-  }
-
   try {
     state.isTracking = true;
     state.reservationId = reservationId;
@@ -282,6 +282,10 @@ export async function startTracking(
     state.lastPosition = null;
     state.lastSent = null;
     state.stoppedSince = null;
+
+    // Request permissions for GPS and Notifications
+    await nativeBridge.requestLocationPermissions();
+    await nativeBridge.requestNotificationPermission();
 
     // Persist tracking info so page reloads or brief backgrounding won't lose tracking
     try {
@@ -296,23 +300,29 @@ export async function startTracking(
     // Keep screen awake
     acquireWakeLock();
 
-    // Query immediate position with high accuracy
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        state.lastPosition = pos;
-        sendPositionToServer(pos, true);
-      },
-      (err) => console.warn('Initial GPS query warning:', err.message),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    // Notify native system about active trip tracking
+    nativeBridge.sendNotification(
+      'Rastreamento Ativo',
+      `Monitoramento de telemetria em andamento${driverName ? ` (${driverName})` : ''}`
     );
 
+    // Query immediate position with high accuracy
+    nativeBridge.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000, maximumAge: 0 })
+      .then((pos) => {
+        if (pos) {
+          state.lastPosition = pos;
+          sendPositionToServer(pos, true);
+        }
+      })
+      .catch((err) => console.warn('Initial GPS query warning:', err));
+
     // Watch position reactively
-    state.watchId = navigator.geolocation.watchPosition(
+    state.watchId = await nativeBridge.watchPosition(
       (pos) => {
         handlePositionUpdate(pos);
       },
       (err) => {
-        console.warn('GPS Watch warning:', err.message);
+        console.warn('GPS Watch warning:', err);
       },
       {
         enableHighAccuracy: true,
@@ -345,11 +355,7 @@ export async function startTracking(
 export function stopTracking(): void {
   // 1. Immediately clear GPS hardware watch
   if (state.watchId !== null) {
-    try {
-      navigator.geolocation.clearWatch(state.watchId);
-    } catch (e) {
-      console.warn('Error clearing geolocation watch:', e);
-    }
+    nativeBridge.clearWatch(state.watchId);
     state.watchId = null;
   }
 
@@ -369,7 +375,10 @@ export function stopTracking(): void {
     // ignore
   }
 
-  // 5. Reset all state values
+  // 5. Notify trip ended
+  nativeBridge.sendNotification('Rastreamento Encerrado', 'O registro de viagem e GPS foi finalizado.');
+
+  // 6. Reset all state values
   state.isTracking = false;
   state.reservationId = null;
   state.vehicleId = null;
@@ -498,13 +507,6 @@ export async function getLatestPositions(): Promise<VehiclePosition[]> {
 }
 
 export async function requestGeolocationPermission(): Promise<string> {
-  if (typeof navigator === 'undefined' || !navigator.geolocation) return 'denied';
-
-  return new Promise((resolve) => {
-    navigator.geolocation.getCurrentPosition(
-      () => resolve('granted'),
-      () => resolve('denied'),
-      { timeout: 5000 }
-    );
-  });
+  const granted = await nativeBridge.requestLocationPermissions();
+  return granted ? 'granted' : 'denied';
 }
