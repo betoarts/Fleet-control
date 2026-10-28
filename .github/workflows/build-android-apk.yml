@@ -77,41 +77,48 @@ jobs:
           storeFile=../../release.keystore
           EOF
 
-      - name: Compilar APK Android via Terminal
+      - name: Compilar APK Android Release via Terminal
         run: |
           npx tauri android build --apk --target aarch64 armv7 --ci
+
+      - name: Compilar APK Android Debug (Fallback Sem Ofuscação R8)
+        run: |
+          npx tauri android build --apk --debug --target aarch64 armv7 --ci
 
       - name: Assinar e Validar APKs com apksigner
         id: sign-apk
         run: |
           mkdir -p release-output
-          APKS=$(find src-tauri/gen/android/app/build/outputs/apk -name "*.apk")
-          echo "=== APKs ENCONTRADOS ==="
-          echo "$APKS"
+          echo "=== TODOS OS APKS GERADOS PELO GRADLE ==="
+          find src-tauri/gen/android/app/build/outputs/apk -name "*.apk"
 
-          TARGET_APK=$(find src-tauri/gen/android/app/build/outputs/apk -name "*release*.apk" | head -n 1)
-          if [ -z "$TARGET_APK" ]; then
-            TARGET_APK=$(find src-tauri/gen/android/app/build/outputs/apk -name "*.apk" | head -n 1)
+          # 1. Localizar APK Release
+          RELEASE_APK=$(find src-tauri/gen/android/app/build/outputs/apk -name "*release*.apk" | head -n 1)
+          if [ -n "$RELEASE_APK" ]; then
+            echo "Assinando APK Release: $RELEASE_APK"
+            $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
+              --ks release.keystore \
+              --ks-pass pass:nbapark123 \
+              --ks-key-alias fleetcontrol \
+              --key-pass pass:nbapark123 \
+              --out release-output/FleetControl-Tauri-Release.apk \
+              "$RELEASE_APK"
+            cp release-output/FleetControl-Tauri-Release.apk release-output/FleetControl-Tauri-V2.apk
           fi
 
-          echo "Assinando APK selecionado: $TARGET_APK"
+          # 2. Localizar APK Debug (já assinado com chave de debug pelo Gradle)
+          DEBUG_APK=$(find src-tauri/gen/android/app/build/outputs/apk -name "*debug*.apk" | head -n 1)
+          if [ -n "$DEBUG_APK" ]; then
+            echo "Copiando APK Debug: $DEBUG_APK"
+            cp "$DEBUG_APK" release-output/FleetControl-Tauri-Debug.apk
+          fi
 
-          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
-            --ks release.keystore \
-            --ks-pass pass:nbapark123 \
-            --ks-key-alias fleetcontrol \
-            --key-pass pass:nbapark123 \
-            --out release-output/FleetControl-Tauri-V2.apk \
-            "$TARGET_APK"
-
-          echo "Verificando assinatura do APK..."
-          $ANDROID_HOME/build-tools/34.0.0/apksigner verify -v release-output/FleetControl-Tauri-V2.apk
-
+          echo "=== LISTA FINAL DE APKS NA PASTA RELEASE-OUTPUT ==="
           ls -lh release-output
 
-      - name: Publicar APK Assinado como Artifact
+      - name: Publicar APKs Assinados como Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FleetControl-Tauri-V2-Signed
-          path: release-output/FleetControl-Tauri-V2.apk
+          name: FleetControl-Tauri-APK-Package
+          path: release-output/*.apk
           if-no-files-found: error

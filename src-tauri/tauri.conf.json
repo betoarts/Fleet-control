@@ -13,6 +13,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
+        "label": "main",
         "title": "Fleet Control",
         "fullscreen": false,
         "resizable": true

@@ -14,14 +14,12 @@ if (!fs.existsSync(manifestPath)) {
 
 let content = fs.readFileSync(manifestPath, 'utf8');
 
+// Permissões seguras e oficiais para Android
 const permissions = [
   'android.permission.INTERNET',
   'android.permission.ACCESS_NETWORK_STATE',
   'android.permission.ACCESS_FINE_LOCATION',
   'android.permission.ACCESS_COARSE_LOCATION',
-  'android.permission.ACCESS_BACKGROUND_LOCATION',
-  'android.permission.FOREGROUND_SERVICE',
-  'android.permission.FOREGROUND_SERVICE_LOCATION',
   'android.permission.POST_NOTIFICATIONS',
   'android.permission.WAKE_LOCK'
 ];
@@ -37,10 +35,10 @@ if (permissionsXml) {
   content = content.replace('<application', `${permissionsXml}\n    <application`);
 }
 
-// Permitir tráfego de rede e HTTPS sem bloqueio de segurança local
+// Permitir tráfego HTTP/HTTPS e evitar bloqueios de WebView
 if (!content.includes('android:usesCleartextTraffic')) {
   content = content.replace('<application', '<application android:usesCleartextTraffic="true"');
 }
 
 fs.writeFileSync(manifestPath, content, 'utf8');
-console.log('✅ AndroidManifest.xml configurado com permissões de GPS, Notificações e tráfego de rede!');
+console.log('✅ AndroidManifest.xml configurado com permissões válidas e tráfego seguro!');
