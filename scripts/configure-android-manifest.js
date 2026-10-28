@@ -35,8 +35,12 @@ permissions.forEach(perm => {
 
 if (permissionsXml) {
   content = content.replace('<application', `${permissionsXml}\n    <application`);
-  fs.writeFileSync(manifestPath, content, 'utf8');
-  console.log('✅ Permissões de Localização e Notificações injetadas no AndroidManifest.xml com sucesso!');
-} else {
-  console.log('ℹ️ Todas as permissões necessárias já estão presentes no AndroidManifest.xml.');
 }
+
+// Permitir tráfego de rede e HTTPS sem bloqueio de segurança local
+if (!content.includes('android:usesCleartextTraffic')) {
+  content = content.replace('<application', '<application android:usesCleartextTraffic="true"');
+}
+
+fs.writeFileSync(manifestPath, content, 'utf8');
+console.log('✅ AndroidManifest.xml configurado com permissões de GPS, Notificações e tráfego de rede!');

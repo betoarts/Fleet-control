@@ -17,8 +17,8 @@ jobs:
 
     env:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://kxfsmifgymckdykompqg.supabase.co' }}
-      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4ZnNtaWZneW1ja2R5a29tcHFnIiwicm9sZSI6ImFub24iLCJpYXQiOj[...]
-    
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4ZnNtaWZneW1ja2R5a29tcHFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3ODM0NjMsImV4cCI6MjA5MjM1OTQ2M30.XI72AIMJtWasm09k9XFHGV94l6NEnJMu72Z7gZuSq9I' }}
+
     steps:
       - name: Checkout Repositório
         uses: actions/checkout@v4
@@ -38,24 +38,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Instalar Android SDK, NDK e Ferramentas de Compilação
+      - name: Aceitar Licenças e Configurar NDK Android
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager --install \
-            "platform-tools" \
-            "cmdline-tools;latest" \
-            "platforms;android-34" \
-            "build-tools;34.0.0" \
-            "ndk;26.1.10909125"
-
-          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;26.1.10909125" "build-tools;34.0.0" "platforms;android-34"
           echo "NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125" >> $GITHUB_ENV
 
       - name: Configurar Rust Toolchain com Alvos Android
@@ -76,21 +63,55 @@ jobs:
           npx tauri android init --ci
           node scripts/configure-android-manifest.js
 
-      - name: Compilar APK Android Release via Terminal
+      - name: Gerar Chave Criptográfica de Assinatura (Keystore)
         run: |
-          npx tauri android build --apk --target aarch64 --ci
+          keytool -genkey -v -keystore release.keystore -keyalg RSA -keysize 2048 -validity 10000 \
+            -alias fleetcontrol -storepass nbapark123 -keypass nbapark123 \
+            -dname "CN=FleetControl, OU=Fleet, O=NBAPARK, L=SaoPaulo, S=SP, C=BR"
 
-      - name: Localizar e Renomear APK Gerado
-        id: locate-apk
+          mkdir -p src-tauri/gen/android
+          cat <<EOF > src-tauri/gen/android/keystore.properties
+          storePassword=nbapark123
+          keyPassword=nbapark123
+          keyAlias=fleetcontrol
+          storeFile=../../release.keystore
+          EOF
+
+      - name: Compilar APK Android via Terminal
+        run: |
+          npx tauri android build --apk --target aarch64,armv7 --ci
+
+      - name: Assinar e Validar APKs com apksigner
+        id: sign-apk
         run: |
           mkdir -p release-output
-          find src-tauri/gen/android/app/build/outputs/apk -name "*.apk" -exec cp {} release-output/FleetControl-Tauri-v2.apk \;
-          echo "APK_PATH=release-output/FleetControl-Tauri-v2.apk" >> $GITHUB_OUTPUT
-          ls -la release-output
+          APKS=$(find src-tauri/gen/android/app/build/outputs/apk -name "*.apk")
+          echo "=== APKs ENCONTRADOS ==="
+          echo "$APKS"
 
-      - name: Publicar APK como Artifact para Download
+          TARGET_APK=$(find src-tauri/gen/android/app/build/outputs/apk -name "*release*.apk" | head -n 1)
+          if [ -z "$TARGET_APK" ]; then
+            TARGET_APK=$(find src-tauri/gen/android/app/build/outputs/apk -name "*.apk" | head -n 1)
+          fi
+
+          echo "Assinando APK selecionado: $TARGET_APK"
+
+          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
+            --ks release.keystore \
+            --ks-pass pass:nbapark123 \
+            --ks-key-alias fleetcontrol \
+            --key-pass pass:nbapark123 \
+            --out release-output/FleetControl-Tauri-V2.apk \
+            "$TARGET_APK"
+
+          echo "Verificando assinatura do APK..."
+          $ANDROID_HOME/build-tools/34.0.0/apksigner verify -v release-output/FleetControl-Tauri-V2.apk
+
+          ls -lh release-output
+
+      - name: Publicar APK Assinado como Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FleetControl-Tauri-v2-Android-APK
-          path: release-output/FleetControl-Tauri-v2.apk
+          name: FleetControl-Tauri-V2-Signed
+          path: release-output/FleetControl-Tauri-V2.apk
           if-no-files-found: error
